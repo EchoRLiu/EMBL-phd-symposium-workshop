@@ -1,0 +1,278 @@
+[
+  {
+    "name": "Blablador",
+    "vendor": "customendpoint",
+    "apiKey": "KEEP THE VALUE VS CODE CREATED FOR YOU - copy only the models list",
+    "apiType": "chat-completions",
+    "models": [
+      {
+        "id": "01 - GPT-OSS-120b - an open model released by OpenAI in August 2025",
+        "name": "GPT-OSS 120B",
+        "url": "https://api.blablador.fz-juelich.de/v1",
+        "contextWindow": 131072,
+        "maxOutputTokens": 16384,
+        "toolCalling": true,
+        "thinking": true,
+        "vision": false,
+        "supportsReasoningEffort": [
+          "low",
+          "medium",
+          "high"
+        ]
+      },
+      {
+        "id": "02 - Qwen3.8-Flash-Next-NVFP4, general purpose large model",
+        "name": "Qwen3.8 Flash Next (NVFP4)",
+        "url": "https://api.blablador.fz-juelich.de/v1",
+        "contextWindow": 262144,
+        "maxOutputTokens": 16384,
+        "toolCalling": true,
+        "thinking": true,
+        "vision": true
+      },
+      {
+        "id": "90 - Qwen 3.8-Flash-Next-125B-AWQ-W4A16 on Juwels Booster - An excellent model from September 2026",
+        "name": "Qwen3.8 Flash Next 125B (1M)",
+        "url": "https://api.blablador.fz-juelich.de/v1",
+        "contextWindow": 940000,
+        "maxOutputTokens": 16384,
+        "toolCalling": true,
+        "thinking": true,
+        "vision": true
+      },
+      {
+        "id": "07 - Qwen3.8-27B-FP8 - Multimodal model from Aug 2026",
+        "name": "Qwen3.8 27B (FP8)",
+        "url": "https://api.blablador.fz-juelich.de/v1",
+        "contextWindow": 262144,
+        "maxOutputTokens": 16384,
+        "toolCalling": true,
+        "thinking": true,
+        "vision": true
+      },
+      {
+        "id": "90 - Qwen 3.8-27B on Juwels Booster",
+        "name": "Qwen3.8 27B (Juwels)",
+        "url": "https://api.blablador.fz-juelich.de/v1",
+        "contextWindow": 262144,
+        "maxOutputTokens": 16384,
+        "toolCalling": true,
+        "thinking": true,
+        "vision": true
+      },
+      {
+        "id": "Swift-Qwen3.8-27b",
+        "name": "Swift Qwen3.8 27B",
+        "url": "https://api.blablador.fz-juelich.de/v1",
+        "contextWindow": 262144,
+        "maxOutputTokens": 16384,
+        "toolCalling": true,
+        "thinking": false,
+        "vision": false
+      },
+      {
+        "id": "Muse-Spark-Open-816B-A42B - Built with Muse Spark Open",
+        "name": "Muse Spark Open 816B",
+        "url": "https://api.blablador.fz-juelich.de/v1",
+        "contextWindow": 1048576,
+        "maxOutputTokens": 16384,
+        "toolCalling": true,
+        "thinking": true,
+        "vision": true
+      },
+      {
+        "id": "90 - Kimi-K3 1M on Juwels Booster",
+        "name": "Kimi K3.1 Pro (1M)",
+        "url": "https://api.blablador.fz-juelich.de/v1",
+        "contextWindow": 1048576,
+        "maxOutputTokens": 16384,
+        "toolCalling": true,
+        "thinking": true,
+        "vision": true,
+        "supportsReasoningEffort": [
+          "low",
+          "high",
+          "max"
+        ]
+      },
+      {
+        "id": "15 - DeepSeek-V4.1-Flash on JUWELS Booster",
+        "name": "DeepSeek V4.1 Flash (Juwels)",
+        "url": "https://api.blablador.fz-juelich.de/v1",
+        "contextWindow": 1048576,
+        "maxOutputTokens": 16384,
+        "toolCalling": true,
+        "thinking": true,
+        "vision": false,
+        "supportsReasoningEffort": [
+          "low",
+          "high",
+          "max"
+        ]
+      },
+      {
+        "id": "deepseek-v4.1-flash-at-hzdr",
+        "name": "DeepSeek V4.1 Flash (HZDR)",
+        "url": "https://api.blablador.fz-juelich.de/v1",
+        "contextWindow": 1048576,
+        "maxOutputTokens": 16384,
+        "toolCalling": true,
+        "thinking": true,
+        "vision": false,
+        "supportsReasoningEffort": [
+          "low",
+          "high",
+          "max"
+        ]
+      },
+      {
+        "id": "90 - Glm-5.3-Flash on Juwels Booster",
+        "name": "GLM 5.3 Flash",
+        "url": "https://api.blablador.fz-juelich.de/v1",
+        "contextWindow": 1048576,
+        "maxOutputTokens": 16384,
+        "toolCalling": true,
+        "thinking": true,
+        "vision": true
+      },
+      {
+        "id": "80 - MiMo-V2.6-Pro-RL on Juwels Booster",
+        "name": "MiMo V2.6 Pro",
+        "url": "https://api.blablador.fz-juelich.de/v1",
+        "contextWindow": 1048576,
+        "maxOutputTokens": 16384,
+        "toolCalling": true,
+        "thinking": true,
+        "vision": false
+      },
+      {
+        "id": "80 - MiMo-V2.6-Flash-RL on Juwels Booster",
+        "name": "MiMo V2.6 Flash",
+        "url": "https://api.blablador.fz-juelich.de/v1",
+        "contextWindow": 1048576,
+        "maxOutputTokens": 16384,
+        "toolCalling": true,
+        "thinking": true,
+        "vision": false
+      },
+      {
+        "id": "10 - A good european model - Mistral 4 Large",
+        "name": "Mistral 4 Large",
+        "url": "https://api.blablador.fz-juelich.de/v1",
+        "contextWindow": 262144,
+        "maxOutputTokens": 16384,
+        "toolCalling": true,
+        "thinking": true,
+        "vision": true
+      },
+      {
+        "id": "30 - Swiss AI: Apertus-v1.5-70B",
+        "name": "Apertus v1.5 70B",
+        "url": "https://api.blablador.fz-juelich.de/v1",
+        "contextWindow": 262144,
+        "maxOutputTokens": 16384,
+        "toolCalling": true,
+        "thinking": false,
+        "vision": false
+      },
+      {
+        "id": "00 - Aleph Kolibri",
+        "name": "Aleph Kolibri",
+        "url": "https://api.blablador.fz-juelich.de/v1",
+        "contextWindow": 262144,
+        "maxOutputTokens": 16384,
+        "toolCalling": true,
+        "thinking": false,
+        "vision": false
+      },
+      {
+        "id": "10 - Hydrogen 1.0 - a scientific model for chemistry, materials science, and life sciences",
+        "name": "Hydrogen 1.0 (Science)",
+        "url": "https://api.blablador.fz-juelich.de/v1",
+        "contextWindow": 262144,
+        "maxOutputTokens": 16384,
+        "toolCalling": true,
+        "thinking": true,
+        "vision": false
+      },
+      {
+        "id": "20 - MedGemma - A model for medical text and image comprehension to accelerate building healthcare-based AI applications",
+        "name": "MedGemma 27B",
+        "url": "https://api.blablador.fz-juelich.de/v1",
+        "contextWindow": 131072,
+        "maxOutputTokens": 16384,
+        "toolCalling": false,
+        "thinking": false,
+        "vision": true
+      },
+      {
+        "id": "20 - EVE-Instruct - Expert Earth Observation and Earth Science (ES) domains",
+        "name": "EVE-Instruct (Earth Science)",
+        "url": "https://api.blablador.fz-juelich.de/v1",
+        "contextWindow": 131072,
+        "maxOutputTokens": 16384,
+        "toolCalling": false,
+        "thinking": false,
+        "vision": false
+      }
+    ]
+  },
+  {
+    "name": "de.NBI",
+    "vendor": "customendpoint",
+    "apiKey": "KEEP THE VALUE VS CODE CREATED FOR YOU - copy only the models list",
+    "apiType": "chat-completions",
+    "models": [
+      {
+        "id": "vllm/Qwen/Qwen3-Coder-Next",
+        "name": "de.NBI Qwen3 Coder Next",
+        "url": "https://llm.bi.denbi.de/v1",
+        "contextWindow": 32768,
+        "maxOutputTokens": 4096,
+        "toolCalling": true,
+        "thinking": false,
+        "vision": false
+      },
+      {
+        "id": "vllm/Qwen/Qwen3.6-35B-A3B",
+        "name": "de.NBI Qwen3.6 35B",
+        "url": "https://llm.bi.denbi.de/v1",
+        "contextWindow": 32768,
+        "maxOutputTokens": 4096,
+        "toolCalling": true,
+        "thinking": true,
+        "vision": false
+      },
+      {
+        "id": "vllm/Qwen/Qwen3.8-27B",
+        "name": "de.NBI Qwen3.8 27B",
+        "url": "https://llm.bi.denbi.de/v1",
+        "contextWindow": 32768,
+        "maxOutputTokens": 4096,
+        "toolCalling": true,
+        "thinking": true,
+        "vision": false
+      },
+      {
+        "id": "vllm/google/gemma-4-31B-it",
+        "name": "de.NBI Gemma 4 31B",
+        "url": "https://llm.bi.denbi.de/v1",
+        "contextWindow": 32768,
+        "maxOutputTokens": 4096,
+        "toolCalling": true,
+        "thinking": false,
+        "vision": false
+      },
+      {
+        "id": "vllm/openai/gpt-oss-120b",
+        "name": "de.NBI GPT-OSS 120B",
+        "url": "https://llm.bi.denbi.de/v1",
+        "contextWindow": 32768,
+        "maxOutputTokens": 4096,
+        "toolCalling": true,
+        "thinking": true,
+        "vision": false
+      }
+    ]
+  }
+]

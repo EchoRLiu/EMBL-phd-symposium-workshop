@@ -1,0 +1,77 @@
+{
+  "providers": [
+    {
+      "name": "blablador",
+      "type": "openai",
+      "baseUrl": "https://api.blablador.fz-juelich.de/v1",
+      "apiKey": "PASTE-YOUR-BLABLADOR-KEY-HERE"
+    },
+    {
+      "name": "denbi",
+      "type": "openai",
+      "baseUrl": "https://llm.bi.denbi.de/v1",
+      "apiKey": "PASTE-YOUR-DENBI-KEY-HERE"
+    }
+  ],
+  "models": [
+    {
+      "id": "alias-code",
+      "provider": "blablador",
+      "maxPromptTokens": 81920,
+      "maxOutputTokens": 16384
+    },
+    {
+      "id": "alias-fast",
+      "provider": "blablador",
+      "maxPromptTokens": 81920,
+      "maxOutputTokens": 16384
+    },
+    {
+      "id": "alias-large",
+      "provider": "blablador",
+      "maxPromptTokens": 81920,
+      "maxOutputTokens": 16384
+    },
+    {
+      "id": "alias-huge",
+      "provider": "blablador",
+      "maxPromptTokens": 81920,
+      "maxOutputTokens": 16384
+    },
+    {
+      "id": "qwen3-coder-next",
+      "provider": "denbi",
+      "wireModel": "vllm/Qwen/Qwen3-Coder-Next",
+      "maxPromptTokens": 28672,
+      "maxOutputTokens": 4096
+    },
+    {
+      "id": "qwen3.6-35b",
+      "provider": "denbi",
+      "wireModel": "vllm/Qwen/Qwen3.6-35B-A3B",
+      "maxPromptTokens": 28672,
+      "maxOutputTokens": 4096
+    },
+    {
+      "id": "qwen3.8-27b",
+      "provider": "denbi",
+      "wireModel": "vllm/Qwen/Qwen3.8-27B",
+      "maxPromptTokens": 28672,
+      "maxOutputTokens": 4096
+    },
+    {
+      "id": "gemma-4-31b",
+      "provider": "denbi",
+      "wireModel": "vllm/google/gemma-4-31B-it",
+      "maxPromptTokens": 28672,
+      "maxOutputTokens": 4096
+    },
+    {
+      "id": "gpt-oss-120b",
+      "provider": "denbi",
+      "wireModel": "vllm/openai/gpt-oss-120b",
+      "maxPromptTokens": 28672,
+      "maxOutputTokens": 4096
+    }
+  ]
+}

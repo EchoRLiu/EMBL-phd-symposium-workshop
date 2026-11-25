@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Robot in the Sandbox</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: radial-gradient(1100px 650px at 50% -10%, #1d2c3d 0%, #0e141d 70%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, monospace;
+    color: #e8eef7;
+  }
+  .stage { width: min(94vw, 840px); }
+  .frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 800 / 520;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.07);
+  }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .hud {
+    position: absolute;
+    top: 10px; left: 14px; right: 14px;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+  }
+  .hud .box {
+    background: rgba(9, 14, 21, 0.58);
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    border-radius: 8px;
+    padding: 6px 12px;
+  }
+  #timer { font-size: 20px; font-weight: 700; min-width: 74px; text-align: center; }
+  #timer.low { color: #ff5d5d; animation: pulse 0.5s steps(2) infinite; }
+  @keyframes pulse { 50% { opacity: 0.35; } }
+  .overlay {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(7, 11, 17, 0.62);
+  }
+  .overlay.hidden { display: none; }
+  .panel {
+    text-align: center;
+    background: rgba(15, 23, 33, 0.94);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 16px;
+    padding: 26px 34px 24px;
+    max-width: 440px;
+    margin: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  }
+  .panel h1 {
+    margin: 0 0 10px;
+    font-size: 27px;
+    letter-spacing: 2px;
+    color: #4de3c0;
+    text-shadow: 0 2px 14px rgba(77, 227, 192, 0.35);
+  }
+  .panel .sub { margin: 0 0 14px; color: #9fb2c8; font-size: 14px; line-height: 1.55; }
+  .panel .sub b { color: #ffe08a; }
+  .panel .keys { margin: 8px 0 4px; font-size: 13px; color: #c3d2e2; }
+  .panel .tiny { margin: 12px 0 0; font-size: 12px; color: #7f93ab; }
+  .newbest { color: #ffd166; font-weight: 700; letter-spacing: 1px; }
+  kbd {
+    display: inline-block;
+    background: #263344;
+    border: 1px solid #3d4f66;
+    border-bottom-width: 3px;
+    border-radius: 6px;
+    padding: 1px 7px;
+    margin: 0 2px;
+    font: inherit;
+    font-size: 12px;
+    color: #cfe0f2;
+  }
+  .btn {
+    font: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    color: #062420;
+    background: linear-gradient(180deg, #4de3c0, #2ec4b6);
+    border: none;
+    border-radius: 10px;
+    padding: 10px 24px;
+    margin-top: 12px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 0 #178f83, 0 8px 20px rgba(0, 0, 0, 0.35);
+  }
+  .btn:hover { filter: brightness(1.06); }
+  .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #178f83, 0 4px 12px rgba(0, 0, 0, 0.3); }
+  .btn.ghost {
+    background: transparent;
+    color: #9fb2c8;
+    border: 1px solid #3d4f66;
+    box-shadow: none;
+    margin-left: 8px;
+  }
+  .btn.ghost:hover { color: #fff; border-color: #5b7089; }
+  .hint { text-align: center; color: #7f93ab; font-size: 13px; margin: 12px 0 18px; }
+</style>
+</head>
+<body>
+<main class="stage">
+  <div class="frame">
+    <canvas id="game"></canvas>
+    <div class="hud">
+      <div class="box" id="score">GPU 0</div>
+      <div class="box" id="timer">60.0</div>
+      <div class="box" id="best">BEST 0</div>
+    </div>
+    <div class="overlay" id="overlay"></div>
+  </div>
+  <p class="hint" id="hint"></p>
+</main>
+
+<script>
+(() => {
+'use strict';
+
+// ---------- constants ----------
+const W = 800, H = 520;
+const WALL = 16;           // sandbox wall thickness
+const GAME_TIME = 60;      // seconds
+const ROBOT_R = 16;
+const GPU_R = 15;
+const COLLECT_DIST = ROBOT_R + GPU_R;
+const ACCEL = 520, BRAKE = 700, REV_ACCEL = 320;
+const MAX_SPEED = 280, MAX_REVERSE = 110;
+const DAMP = 3.4;          // coasting friction, per second
+const TURN = 3.6;          // rad/s at full speed
+const SPAWN_FADE = 0.4;    // seconds for a new GPU to materialize
+
+// ---------- dom ----------
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const hudScore = document.getElementById('score');
+const hudTimer = document.getElementById('timer');
+const hudBest = document.getElementById('best');
+const overlay = document.getElementById('overlay');
+const hintEl = document.getElementById('hint');
+
+// ---------- state ----------
+let state = 'start';
+const keys = new Set();
+let robot, gpu, particles;
+let score = 0, timeLeft = GAME_TIME, elapsed = 0, clock = 0;
+let muted = false;
+let newBest = false;
+let best = 0;
+try { best = Number(localStorage.getItem('robotSandboxBest') || 0) || 0; } catch (e) {}
+let dpr = 1;
+const lastHud = {};
+
+// ---------- audio (synthesized, no assets) ----------
+let audioCtx = null;
+function ensureAudio() {
+  if (!audioCtx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) { try { audioCtx = new AC(); } catch (e) { audioCtx = null; } }
+  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+}
+function beep(freq, dur, type, vol, delay) {
+  if (muted || !audioCtx) return;
+  dur = dur || 0.08; type = type || 'square'; vol = vol || 0.04; delay = delay || 0;
+  const t0 = audioCtx.currentTime + delay;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = type;
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol, t0);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(t0);
+  o.stop(t0 + dur + 0.03);
+}
+const sndStart = () => { beep(660, 0.08); beep(990, 0.1, 'square', 0.04, 0.09); };
+const sndCollect = () => { beep(880, 0.06); beep(1318, 0.09, 'square', 0.04, 0.06); };
+const sndEnd = () => { beep(330, 0.25, 'sawtooth', 0.05); beep(220, 0.4, 'sawtooth', 0.05, 0.2); };
+
+// ---------- canvas sizing ----------
+function fit() {
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
+}
+window.addEventListener('resize', fit);
+
+// ---------- sandbox background (drawn once to offscreen canvas) ----------
+const sand = document.createElement('canvas');
+sand.width = W; sand.height = H;
+(function drawSand() {
+  const s = sand.getContext('2d');
+  s.fillStyle = '#d7ae6a';
+  s.fillRect(0, 0, W, H);
+  for (let i = 0; i < 14; i++) { // light dune patches
+    s.fillStyle = 'rgba(255,240,200,' + (0.05 + Math.random() * 0.06) + ')';
+    s.beginPath();
+    s.ellipse(Math.random() * W, Math.random() * H,
+      30 + Math.random() * 70, 20 + Math.random() * 50, Math.random() * Math.PI, 0, Math.PI * 2);
+    s.fill();
+  }
+  for (let i = 0; i < 420; i++) { // speckles
+    s.fillStyle = Math.random() < 0.5 ? 'rgba(120,84,40,0.18)' : 'rgba(255,235,190,0.22)';
+    s.beginPath();
+    s.arc(Math.random() * W, Math.random() * H, 0.8 + Math.random() * 1.6, 0, Math.PI * 2);
+    s.fill();
+  }
+  s.strokeStyle = 'rgba(90,60,25,0.10)'; // faint grid
+  s.lineWidth = 1;
+  for (let x = 0; x <= W; x += 40) { s.beginPath(); s.moveTo(x + 0.5, 0); s.lineTo(x + 0.5, H); s.stroke(); }
+  for (let y = 0; y <= H; y += 40) { s.beginPath(); s.moveTo(0, y + 0.5); s.lineTo(W, y + 0.5); s.stroke(); }
+  s.strokeStyle = '#8a5a2b'; // wall band, exactly WALL thick
+  s.lineWidth = WALL;
+  s.strokeRect(WALL / 2, WALL / 2, W - WALL, H - WALL);
+  s.strokeStyle = 'rgba(255,230,180,0.4)';
+  s.lineWidth = 2;
+  s.strokeRect(WALL + 1, WALL + 1, W - WALL * 2 - 2, H - WALL * 2 - 2);
+})();
+
+// ---------- drawing helpers ----------
+function rr(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function drawRobot(x, y, angle) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.fillStyle = 'rgba(60,40,10,0.28)'; // shadow
+  rr(-20, -9, 40, 24, 8); ctx.fill();
+  ctx.fillStyle = '#2b3440'; // treads
+  rr(-21, -17, 42, 8, 4); ctx.fill();
+  rr(-21, 9, 42, 8, 4); ctx.fill();
+  ctx.fillStyle = '#45526a';
+  for (let i = -18; i < 18; i += 6) {
+      ctx.fillRect(i, -16, 2, 6);
+      ctx.fillRect(i, 10, 2, 6);
+  }
+  ctx.fillStyle = '#3ddbc0'; // body
+  rr(-18, -10, 36, 20, 7); ctx.fill();
+  ctx.strokeStyle = '#1d7d72';
+  ctx.lineWidth = 2.5;
+  rr(-18, -10, 36, 20, 7); ctx.stroke();
+  ctx.fillStyle = '#2c3542'; // eye, facing forward
+  ctx.beginPath(); ctx.arc(8, 0, 5.5, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#cfe9ff';
+  ctx.beginPath(); ctx.arc(10, -1.5, 1.8, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#ff5d5d'; // blinking rear light
+  const blink = 0.6 + 0.4 * Math.sin(clock * 6);
+  ctx.globalAlpha = blink;
+  ctx.beginPath(); ctx.arc(-11, 0, 3, 0, Math.PI * 2); ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = '#ffe08a'; // headlights
+  ctx.beginPath(); ctx.arc(16, -6, 2, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(16, 6, 2, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+function drawGpu(x, y) {
+  const a = Math.min(1, (clock - gpu.born) / SPAWN_FADE);
+  const s = 0.6 + 0.4 * a;
+  const pulse = 0.75 + 0.25 * Math.sin(clock * 5);
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(s, s);
+  ctx.globalAlpha = a;
+  ctx.fillStyle = 'rgba(80,60,20,0.3)'; // shadow
+  rr(-20, -12, 44, 30, 5); ctx.fill();
+  ctx.shadowColor = 'rgba(120,255,150,' + (0.55 * pulse) + ')';
+  ctx.shadowBlur = 14 * pulse;
+  ctx.fillStyle = '#2f9e44'; // board
+  rr(-22, -15, 44, 30, 5); ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = '#1e6f2f';
+  ctx.lineWidth = 2;
+  rr(-22, -15, 44, 30, 5); ctx.stroke();
+  ctx.fillStyle = '#f4b942'; // chip
+  rr(-9, -9, 18, 18, 3); ctx.fill();
+  ctx.strokeStyle = '#c88f26';
+  ctx.lineWidth = 1.5;
+  rr(-9, -9, 18, 18, 3); ctx.stroke();
+  ctx.fillStyle = '#5a3d10';
+  ctx.font = 'bold 8px monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('GPU', 0, 0);
+  // fan
+  ctx.fillStyle = '#173f21';
+  ctx.beginPath(); ctx.arc(12, 8, 5.5, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#bfe8c8';
+  ctx.lineWidth = 1.5;
+  for (let i = 0; i < 3; i++) {
+    const fa = clock * 6 + i * 2.094;
+    ctx.beginPath();
+    ctx.moveTo(12, 8);
+    ctx.lineTo(12 + Math.cos(fa) * 4.2, 8 + Math.sin(fa) * 4.2);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawParticles() {
+  for (const p of particles) {
+    ctx.globalAlpha = Math.max(0, 1 - p.t / p.life);
+    ctx.fillStyle = p.c;
+    ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ---------- gameplay ----------
+function spawnGpu() {
+  const pad = WALL + 40;
+  let x, y, tries = 0;
+  do {
+    x = pad + Math.random() * (W - pad * 2);
+    y = pad + Math.random() * (H - pad * 2);
+    tries++;
+  } while (tries < 30 && Math.hypot(x - robot.x, y - robot.y) < 150);
+  gpu = { x, y, born: clock };
+}
+
+function burst(x, y) {
+  const colors = ['#f4b942', '#7cf7a4', '#ffffff', '#ff8a5c'];
+  for (let i = 0; i < 14; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const sp = 60 + Math.random() * 160;
+    particles.push({
+      x, y,
+      vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,
+      life: 0.45 + Math.random() * 0.3, t: 0,
+      c: colors[i % 4], size: 2 + Math.random() * 3
+    });
+  }
+}
+
+function update(dt) {
+  elapsed += dt;
+  timeLeft = Math.max(0, GAME_TIME - elapsed);
+
+  const up = keys.has('up'), down = keys.has('down');
+  const left = keys.has('left'), right = keys.has('right');
+  let s = robot.speed;
+  if (up) s += ACCEL * dt;
+  if (down) s -= (s > 40 ? BRAKE : REV_ACCEL) * dt;
+  s = Math.min(MAX_SPEED, Math.max(-MAX_REVERSE, s));
+  if (!up && !down) {
+    s *= Math.exp(-DAMP * dt);
+    if (Math.abs(s) < 4) s = 0;
+  }
+  const dir = (left ? -1 : 0) + (right ? 1 : 0);
+  const sf = Math.min(1, Math.abs(s) / 170);
+  robot.angle += dir * TURN * (0.35 + 0.65 * sf) * (s < -10 ? -1 : 1) * dt;
+  robot.speed = s;
+  robot.x += Math.cos(robot.angle) * s * dt;
+  robot.y += Math.sin(robot.angle) * s * dt;
+
+  // walls: clamp + little bounce
+  const minX = WALL + ROBOT_R, maxX = W - WALL - ROBOT_R;
+  const minY = WALL + ROBOT_R, maxY = H - WALL - ROBOT_R;
+  robot.x = Math.min(maxX, Math.max(minX, robot.x));
+  robot.y = Math.min(maxY, Math.max(minY, robot.y));
+  const vx = Math.cos(robot.angle) * robot.speed;
+  const vy = Math.sin(robot.angle) * robot.speed;
+  const hitWall = (robot.x === minX && vx < 0) || (robot.x === maxX && vx > 0) ||
+                 (robot.y === minY && vy < 0) || (robot.y === maxY && vy > 0);
+  if (hitWall) robot.speed *= -0.45;
+
+  // collect
+  if (Math.hypot(robot.x - gpu.x, robot.y - gpu.y) < COLLECT_DIST) {
+    score++;
+    burst(gpu.x, gpu.y);
+    sndCollect();
+    spawnGpu();
+  }
+
+  // particles
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.t += dt;
+    if (p.t >= p.life) { particles.splice(i, 1); continue; }
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.vx *= Math.exp(-4 * dt);
+    p.vy *= Math.exp(-4 * dt);
+  }
+
+  if (timeLeft <= 0) endGame();
+}
+
+function render() {
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.drawImage(sand, 0, 0);
+  drawGpu(gpu.x, gpu.y);
+  drawParticles();
+  drawRobot(robot.x, robot.y, robot.angle);
+}
+
+function updateHud() {
+  const t = timeLeft.toFixed(1);
+  if (lastHud.t !== t) { hudTimer.textContent = t; lastHud.t = t; }
+  hudTimer.classList.toggle('low', state === 'playing' && timeLeft <= 10);
+  if (lastHud.s !== score) { hudScore.textContent = 'GPU ' + score; lastHud.s = score; }
+  if (lastHud.b !== best) { hudBest.textContent = 'BEST ' + best; lastHud.b = best; }
+  const sec = Math.ceil(timeLeft);
+  if (state === 'playing' && sec <= 10 && sec >= 1 && lastHud.sec !== sec) {
+    beep(900, 0.04, 'square', 0.025);
+  }
+  lastHud.sec = sec;
+}
+
+// ---------- state transitions ----------
+function startPanel() {
+  return '<div class="panel">' +
+    '<h1>ROBOT IN THE SANDBOX</h1>' +
+    '<p class="sub">Steer your little robot and collect every <b>GPU</b> you can' +
+    ' before the <b>60-second</b> timer runs out.<br>Only one GPU is on the field' +
+    ' at a time \u2014 chase it down!</p>' +
+    '<p class="keys"><kbd>\u2191</kbd>/<kbd>\u2193</kbd> throttle &amp; brake &nbsp;\u00b7&nbsp; <kbd>\u2190</kbd>/<kbd>\u2192</kbd> turn</p>' +
+    '<p class="keys"><kbd>P</kbd> pause &nbsp;\u00b7&nbsp; <kbd>M</kbd> sound &nbsp;\u00b7&nbsp; <kbd>WASD</kbd> works too</p>' +
+    '<button class="btn" data-act="start">Start</button>' +
+    '<p class="tiny">...or press <kbd>Enter</kbd>' + (best > 0 ? ' &nbsp;\u00b7&nbsp; best so far: <b>' + best + '</b>' : '') + '</p>' +
+    '</div>';
+}
+function pausedPanel() {
+  return '<div class="panel">' +
+    '<h1>PAUSED</h1>' +
+    '<p class="sub">The timer is stopped. Take a breath.</p>' +
+    '<button class="btn" data-act="resume">Resume</button>' +
+    '<button class="btn ghost" data-act="restart">Restart</button>' +
+    '<p class="tiny">...or press <kbd>P</kbd> to resume</p>' +
+    '</div>';
+}
+function overPanel() {
+  const noun = score === 1 ? 'GPU' : 'GPUs';
+  return '<div class="panel">' +
+    '<h1>TIME\u2019S UP!</h1>' +
+    '<p class="sub">You collected <b>' + score + '</b> ' + noun + ' in 60 seconds.</p>' +
+    '<p class="keys">' + (newBest ? '<span class="newbest">\u2605 NEW BEST!</span>' : 'Best: ' + best) + '</p>' +
+    '<button class="btn" data-act="start">Play again</button>' +
+    '<p class="tiny">...or press <kbd>Enter</kbd></p>' +
+    '</div>';
+}
+function showOverlay(kind) {
+  overlay.innerHTML = kind === 'start' ? startPanel() : kind === 'paused' ? pausedPanel() : overPanel();
+  overlay.classList.remove('hidden');
+}
+function hideOverlay() {
+  overlay.classList.add('hidden');
+  overlay.innerHTML = '';
+}
+
+function startGame() {
+  ensureAudio();
+  score = 0; elapsed = 0; timeLeft = GAME_TIME;
+  particles = [];
+  robot = { x: W / 2, y: H / 2 + 60, angle: -Math.PI / 2, speed: 0 };
+  spawnGpu();
+  newBest = false;
+  state = 'playing';
+  hideOverlay();
+  sndStart();
+  lastHud.t = null;
+}
+
+function endGame() {
+  state = 'over';
+  newBest = score > best;
+  if (newBest) {
+    best = score;
+    try { localStorage.setItem('robotSandboxBest', String(best)); } catch (e) {}
+  }
+  sndEnd();
+  showOverlay('over');
+}
+
+function pauseGame() {
+  if (state !== 'playing') return;
+  state = 'paused';
+  showOverlay('paused');
+}
+
+function resumeGame() {
+  if (state !== 'paused') return;
+  state = 'playing';
+  hideOverlay();
+}
+
+function updateHint() {
+  hintEl.textContent = '\u2191 \u2193 throttle \u00b7 \u2190 \u2192 turn \u00b7 P pause \u00b7 M sound ' + (muted ? 'off' : 'on');
+}
+
+// ---------- input ----------
+const KEYMAP = {
+  ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
+  KeyW: 'up', KeyS: 'down', KeyA: 'left', KeyD: 'right'
+};
+window.addEventListener('keydown', (e) => {
+  if (e.code in KEYMAP) {
+    keys.add(KEYMAP[e.code]);
+    e.preventDefault();
+    return;
+  }
+  if (e.repeat) return;
+  if (e.code === 'Enter') {
+    if (state === 'start' || state === 'over') startGame();
+    else if (state === 'paused') resumeGame();
+    return;
+  }
+  if (e.code === 'KeyP') {
+    if (state === 'playing') pauseGame();
+    else if (state === 'paused') resumeGame();
+    return;
+  }
+  if (e.code === 'KeyM') {
+    muted = !muted;
+    if (!muted) { ensureAudio(); beep(990, 0.06); }
+    updateHint();
+  }
+});
+window.addEventListener('keyup', (e) => {
+  if (e.code in KEYMAP) keys.delete(KEYMAP[e.code]);
+});
+window.addEventListener('blur', () => {
+  keys.clear();
+  if (state === 'playing') pauseGame();
+});
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && state === 'playing') pauseGame();
+});
+overlay.addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-act]');
+  const act = b ? b.dataset.act : null;
+  if (act === 'start' && (state === 'start' || state === 'over')) startGame();
+  else if (act === 'resume' && state === 'paused') resumeGame();
+  else if (act === 'restart' && (state === 'paused' || state === 'over')) startGame();
+  else if (!b && (state === 'start' || state === 'over')) startGame();
+});
+
+// ---------- main loop ----------
+let last = performance.now();
+function loop(now) {
+  requestAnimationFrame(loop);
+  let dt = (now - last) / 1000;
+  last = now;
+  if (dt > 0.05) dt = 0.05;
+  clock += dt;
+  if (state === 'playing') update(dt);
+  render();
+  updateHud();
+}
+
+// ---------- boot ----------
+(function initIdle() {
+  robot = { x: W / 2, y: H / 2 + 40, angle: -Math.PI / 2, speed: 0 };
+  particles = [];
+  spawnGpu();
+  state = 'start';
+  showOverlay('start');
+  updateHint();
+})();
+fit();
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

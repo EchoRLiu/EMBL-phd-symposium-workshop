@@ -1,0 +1,44 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "blablador/alias-fast",
+  "small_model": "blablador/alias-fast",
+  "compaction": {
+    "auto": true,
+    "prune": true,
+    "reserved": 10000
+  },
+  "permissions": [
+    { "action": "shell", "resource": "*", "effect": "ask" },
+    { "action": "edit", "resource": "*", "effect": "ask" },
+    { "action": "external_directory", "resource": "*", "effect": "ask" }
+  ],
+  "provider": {
+    "blablador": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Blablador",
+      "options": {
+        "baseURL": "https://api.blablador.fz-juelich.de/v1"
+      },
+      "models": {
+        "alias-code": { "name": "Blablador Code (alias-code)", "limit": { "context": 98304, "output": 32768 } },
+        "alias-huge": { "name": "Blablador Huge (alias-huge)", "limit": { "context": 98304, "output": 32768 } },
+        "alias-fast": { "name": "Blablador Fast (alias-fast)", "limit": { "context": 98304, "output": 32768 } },
+        "alias-large": { "name": "Blablador Large (alias-large)", "limit": { "context": 98304, "output": 32768 } }
+      }
+    },
+    "denbi": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "de.NBI",
+      "options": {
+        "baseURL": "https://llm.bi.denbi.de/v1"
+      },
+      "models": {
+        "vllm/Qwen/Qwen3-Coder-Next": { "name": "de.NBI Qwen3 Coder Next", "limit": { "context": 32768, "output": 4096 } },
+        "vllm/Qwen/Qwen3.6-35B-A3B": { "name": "de.NBI Qwen3.6 35B", "limit": { "context": 32768, "output": 4096 } },
+        "vllm/Qwen/Qwen3.8-27B": { "name": "de.NBI Qwen3.8 27B", "limit": { "context": 32768, "output": 4096 } },
+        "vllm/google/gemma-4-31B-it": { "name": "de.NBI Gemma 4 31B", "limit": { "context": 32768, "output": 4096 } },
+        "vllm/openai/gpt-oss-120b": { "name": "de.NBI GPT-OSS 120B", "limit": { "context": 32768, "output": 4096 } }
+      }
+    }
+  }
+}
