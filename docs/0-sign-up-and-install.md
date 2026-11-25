@@ -92,7 +92,11 @@ The de.NBI Cloud Bielefeld LLM API is **API-only**: there is no chat website.
    4. Log in again with the same method and accept the remaining terms. If a page says approval is still needed, refresh it.
 6. Create your API token at <https://llm.bi.denbi.de/token-self-service/> and store it in your password manager.
 
+### Create your API key
+
 The API address is `https://llm.bi.denbi.de/v1`.
+
+For de.NBI, you can create the key at <https://llm.bi.denbi.de/token-self-service/> easily.
 
 > [!TIP]
 > Both are zero-retention services. Still, don't send personal, patient or unpublished confidential data to any hosted model.
