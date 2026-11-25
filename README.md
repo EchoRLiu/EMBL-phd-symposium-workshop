@@ -60,5 +60,3 @@ configs/         ready-to-copy config files, without any keys
 This workshop uses [Blablador](https://helmholtz-blablador.fz-juelich.de), the LLM service of Helmholtz AI hosted by Forschungszentrum Jülich. We gratefully acknowledge **Blablador, the Helmholtz Association and Helmholtz AI**.
 
 We also thank the [de.NBI Cloud Bielefeld](https://llm.bi.denbi.de) for access to its LLM API.
-
-The sandboxing part builds on the course material *Responsible Use of Generative AI in Assisted Coding*, Scenario III: Full Agentic Code Development.
