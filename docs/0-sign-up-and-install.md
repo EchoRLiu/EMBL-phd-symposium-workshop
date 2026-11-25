@@ -2,8 +2,8 @@
 
 [← Back to overview](../README.md) · Next: [1. AI in VS Code →](1-ai-in-vscode.md)
 
-- [Blablador: account and API key](#blablador-recommended)
-- [de.NBI: account and API key (optional)](#denbi-optional)
+- [Blablador: account and API key](#blablador)
+- [de.NBI: account and API key](#denbi)
 - [VS Code](#vs-code)
 - [Git](#git)
 - [GitHub account](#github-account)
@@ -11,7 +11,7 @@
 
 ---
 
-## Blablador (recommended)
+## Blablador
 
 Blablador is the LLM service of Helmholtz AI. It is free for academics and offers both a chat website and an API.
 
@@ -32,7 +32,9 @@ Blablador is the LLM service of Helmholtz AI. It is free for academics and offer
    > The GitHub and Google options can also be buggy: even after a successful confirmation, you may be sent back to this step again and again. If that happens, use ORCID.
 6. The first time, you see a *First time login* window saying *"Your authentication with remote service was successful; however, your account is not known here"*. Click **Register** and complete the check that you're not a bot.
    If you registered before, you are logged in directly.
-7. You'll receive an email within a few minutes. Click the link in it to confirm your registration.
+7. You'll receive an email. Click the link in it to confirm your registration.
+
+   > ⚠️ you may need to wait a few days before the registration is approved if you sign up with ORCID, GitHub, and Google.
 8. You can now log in.
 
 ### Create your API key
@@ -63,17 +65,17 @@ Coding agents send many requests. Blablador limits requests per minute for each 
 | `alias-huge` | 30 |
 | Any other model name | 20 |
 
-The `alias-…` names therefore give you more room. If you go over the limit you get a `429` error and have to wait. Repeated violations lead to longer waits. See the [Blablador API documentation](https://sdlaml.pages.jsc.fz-juelich.de/ai/guides/blablador_api_access/).
+If you go over the limit you get a `429` error and have to wait. Repeated violations lead to longer waits. See the [Blablador API documentation](https://sdlaml.pages.jsc.fz-juelich.de/ai/guides/blablador_api_access/).
 </details>
 
 ---
 
-## de.NBI (optional)
+## de.NBI
 
 The de.NBI Cloud Bielefeld LLM API is **API-only**: there is no chat website.
 
 > [!IMPORTANT]
-> You need a **Life Science Login linked to a German research institution**; your email domain counts. Access is managed through de.NBI projects with a responsible principal investigator. If you can't get access, use Blablador.
+> You need a **Life Science Login linked to a German research institution**; hence your email domain matters. Access is generally managed through de.NBI projects with a responsible principal investigator. 
 
 ### Create an account
 
@@ -92,22 +94,18 @@ The de.NBI Cloud Bielefeld LLM API is **API-only**: there is no chat website.
 
 The API address is `https://llm.bi.denbi.de/v1`.
 
-### Blablador or de.NBI?
-
-- Blablador is much smoother to sign up for, better documented and better supported by the tools below.
-- Blablador also has a chat website; de.NBI is API-only.
-- Both are zero-retention services. Still, don't send personal, patient or unpublished confidential data to any hosted model.
+> [!TIP]
+> Both are zero-retention services. Still, don't send personal, patient or unpublished confidential data to any hosted model.
 
 ---
 
 ## VS Code
 
 - Download: <https://code.visualstudio.com/download>
-- Helpful extension: **Git Graph**, to see your commits and branches.
 
 ## Git
 
-You should always track your code with Git: it's your undo button when an agent changes things.
+You should always track your code with Git: it allows you to undo when an agent changes things you do not want to be changed.
 
 - Download for macOS, Windows or Linux: <https://git-scm.com/downloads>
 
@@ -124,7 +122,7 @@ You should always track your code with Git: it's your undo button when an agent 
 
 - Sign up at <https://github.com/>.
 - Students and teachers can get GitHub Copilot for free through [GitHub Education](https://github.com/education/students).
-- You need a GitHub sign-in only for Copilot's **inline code suggestions** in VS Code. Chat with your own Blablador or de.NBI key works without it.
+- For inline code suggestion, Copilot's **inline code suggestions** in VS Code is generally the best.
 
 ## Multipass
 
