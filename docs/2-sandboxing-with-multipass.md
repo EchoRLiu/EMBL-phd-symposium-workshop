@@ -14,7 +14,7 @@ Here the coding agent runs inside an **Ubuntu virtual machine (VM)**. It can ins
 - [Step 6: Clean up](#step-6-clean-up)
 - [Troubleshooting](#troubleshooting)
 
-In the examples, the project folder is `EMBL-phd-symposium-workshop` inside `Documents`, and the VM is called `test`. Replace both with your own names.
+NOTE: In the following examples, the project folder is `EMBL-phd-symposium-workshop` inside `Documents`, and the VM is called `test`. 
 
 ---
 
@@ -22,19 +22,20 @@ In the examples, the project folder is `EMBL-phd-symposium-workshop` inside `Doc
 
 | | Pure VM | VM with mount |
 |---|---|---|
-| How the code gets in | You copy it in and back out with `multipass transfer` | Your project folder on the laptop also appears inside the VM |
-| When you see the agent's changes | After you copy them back | Immediately, in VS Code on your laptop |
+| How the code enters the VM | You copy it in and back out with `multipass transfer` | You mount your project folder |
+| When you see the changes inside of the VM | After you copy them back | Immediately, in VS Code on your laptop |
 | If the agent deletes files | Only the copy in the VM is affected | They're deleted on your laptop too (Git can restore what you committed) |
 | Isolation | Strongest | Strong, except for that one folder |
 
-Whatever you choose, **clone, commit and push on your laptop**. Your Git credentials (SSH keys, tokens) never go into the VM, so even a misbehaving agent can't push to your repositories.
+> [!IMPORTANT]
+> As seen in the table above, if you mount your project folder, the changes within the VM are applied on your laptop project folder as well. This is why you should always have Git tracking your project and commit changes before you run the agent. If you want to be extra safe, use the pure VM approach.
 
-| | Private repository | Public repository |
-|---|---|---|
-| **Pure VM** | Clone on the laptop → transfer in and out | Clone on the laptop → transfer in and out |
-| **Mount** | Clone on the laptop → mount | Clone on the laptop → mount |
+Whatever you choose, here is a general workflow illustrated in images:
 
-Other setups are possible but not recommended. You *could* put your Git credentials into the VM to clone a private repository there, but then the agent can use them too. A public repository can be cloned inside the VM without credentials, but it's simpler to keep one habit for everything.
+![How code flow works with sandboxing](../imgs/workflow.jpg)
+
+> [!IMPORTANT]
+> Your Git credentials (SSH keys, tokens) should never go into the VM, so even a misbehaving agent can't push to your repositories.
 
 ---
 
@@ -78,6 +79,7 @@ Type `exit` to leave the VM again.
 
 > [!TIP]
 > **What the resources cost:** CPUs are only used while the VM is busy. Memory is reserved as long as the VM is running; `multipass stop test` frees CPU and memory. The disk stays used until you delete the VM.
+> You should always stop the VM when you don't need it, and delete it when you're done with the project.
 
 ### Useful commands
 
