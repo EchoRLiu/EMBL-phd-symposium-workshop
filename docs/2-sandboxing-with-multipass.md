@@ -27,14 +27,14 @@ NOTE: In the following examples, the project folder is `EMBL-phd-symposium-works
 | If the agent deletes files | Only the copy in the VM is affected | They're deleted on your laptop too (Git can restore what you committed) |
 | Isolation | Strongest | Strong, except for that one folder |
 
-> [!IMPORTANT]
+> [!WARNING]
 > As seen in the table above, if you mount your project folder, the changes within the VM are applied on your laptop project folder as well. This is why you should always have Git tracking your project and commit changes before you run the agent. If you want to be extra safe, use the pure VM approach.
 
 Whatever you choose, here is a general workflow illustrated in images:
 
 ![How code flow works with sandboxing](../imgs/workflow.jpg)
 
-> [!IMPORTANT]
+> [!WARNING]
 > Your Git credentials (SSH keys, tokens) should never go into the VM, so even a misbehaving agent can't push to your repositories.
 
 ---
@@ -131,12 +131,12 @@ cd $HOME\Documents
 multipass transfer --recursive test:EMBL-phd-symposium-workshop .
 ```
 
-Git on your laptop now shows what changed, and you decide what to commit and push ([Step 5](#step-5-review-and-keep-the-changes)).
+Git on your laptop now shows what changed, and you can decide what to commit and push ([Step 5](#step-5-review-and-keep-the-changes)).
 
-> [!WARNING]
+> [!NOTE]
 > - **It's a copy, not a sync.** Files the agent deleted inside the VM are **not** deleted on your laptop, so `git status` won't show those deletions.
 > - The copy includes the VM's `.git` folder. Check `.git/hooks` before you commit (see [Step 5](#step-5-review-and-keep-the-changes)).
-> - If you end up with a nested `EMBL-phd-symposium-workshop/EMBL-phd-symposium-workshop` folder, delete the inner copy and copy back into the **parent** folder, as shown above.
+> - If you end up with a nested `EMBL-phd-symposium-workshop/EMBL-phd-symposium-workshop` folder, delete the inner copy and copy back into the **parent** folder.
 
 ---
 
@@ -170,10 +170,8 @@ multipass set local.privileged-mounts=true
 multipass mount "$HOME\Documents\EMBL-phd-symposium-workshop" test:/home/ubuntu/EMBL-phd-symposium-workshop
 ```
 
-If `multipass set` reports a permission error, run that one command in PowerShell opened **as administrator**.
-
 > [!CAUTION]
-> On Windows, Multipass performs mounts with administrator (SYSTEM) rights, which is why they are off by default. Mount only your project folder, and turn mounts off again when you no longer need them: `multipass set local.privileged-mounts=false`.
+> On Windows, turn mounts off again when you no longer need them: `multipass set local.privileged-mounts=false`.
 
 ### Stop sharing
 
@@ -182,7 +180,7 @@ multipass umount test
 ```
 
 > [!TIP]
-> To avoid switching between VS Code and a separate terminal, open VS Code's integrated terminal and run `multipass shell test` there. A Multipass extension for VS Code (for example *Multipass Run*) can do the same with one click.
+> To avoid switching between VS Code and a separate terminal, open VS Code's integrated terminal and run `multipass shell test` there. A Multipass extension for VS Code (for example *Multipass Run*) is needed for this.
 
 ---
 
@@ -192,23 +190,21 @@ All commands in this step run **inside the VM** (`multipass shell test`), unless
 
 ### Option A: OpenCode (recommended)
 
-1. **Install OpenCode.** On <https://opencode.ai/>, copy the command from the **Terminal** install option. At the time of writing:
-   ```bash
-   curl -fsSL https://opencode.ai/v2/install | bash
-   ```
+1. **Install OpenCode.** On <https://opencode.ai/>, copy the command from the **Terminal** install option. 
 2. The installer adds OpenCode to your `PATH` without asking. To use it, type `exit` and run `multipass shell test` again, or run the `export PATH=…` line the installer prints.
 3. **Copy our VM configuration in.** On your laptop, from the folder where you cloned this repository:
    ```bash
    multipass transfer --parents configs/opencode/opencode.vm.json test:.config/opencode/opencode.json
    ```
-   This config sets up Blablador and de.NBI and lets the agent work **without asking for permission**, which is fine inside the VM.
-4. **Install the Blablador plugin** (inside the VM):
+   This config sets up Blablador and de.NBI and lets the agent work **without asking for permission**, which is fine inside the VM. If the folder does not exist, create it first: `mkdir -p ~/.config/opencode`.
+4. **Install the Blablador plugin** (inside the VM): Alternatively, to set up Blablador, run this command inside the VM:
    ```bash
-   opencode plugin add opencode-blablador@0.1.5
+   opencode plugin add opencode-blablador
    ```
 5. **Add your API key.** Start OpenCode with `opencode`, type `/connect`, search for **Blablador** (or **denbi**) and paste your key. Or, before starting OpenCode:
    ```bash
    opencode auth login blablador --method key
+   opencode auth login denbi --method key
    ```
 6. **Choose a model** with `/models`.
 7. **Work in your project:** `cd EMBL-phd-symposium-workshop`, then `opencode`. Press **Tab** for the Plan agent, read its plan, then let it build.
@@ -242,23 +238,7 @@ All commands in this step run **inside the VM** (`multipass shell test`), unless
    export COPILOT_PROVIDER_API_KEY
    ```
 
-   `read -rsp` hides the key while you paste it and keeps it out of your shell history. The settings last until you close the shell. **Don't** write the key into `~/.bashrc` or `~/.profile`.
-
-3. **Longer setup, to switch between models** with `/model` or `copilot --model blablador/alias-code`: Copilot CLI can read a [`providers.json`](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-llm-models) file. It can't read keys from environment variables, so **the key sits in the file as plain text**. Use it only inside the VM:
-   ```bash
-   # on your laptop, from this repository's folder
-   multipass transfer --parents configs/copilot-cli/providers.example.json test:.copilot/providers.json
-   ```
-   ```bash
-   # inside the VM: paste your keys in place of the placeholders, then lock the file
-   nano ~/.copilot/providers.json
-   chmod 600 ~/.copilot/providers.json
-   ```
-
-> [!NOTE]
-> Copilot CLI needs models that support tool calling and streaming, and GitHub recommends a context window of at least 128k tokens. de.NBI's models are set up here with 32k, which may be why they struggle.
-
-**Our verdict:** OpenCode works much better in this setting than the Copilot CLI. de.NBI works inside the VM, but it's less well supported than Blablador.
+   `read -rsp` hides the key while you paste it and keeps it out of your shell history. The settings last until you close the shell. 
 
 ---
 
@@ -291,55 +271,10 @@ multipass stop test             # frees CPU and memory
 multipass delete --purge test   # removes the VM and frees its disk
 ```
 
+> [!WARNING]
+> Only delete the VM when you're done with the project. If you want to keep it for later, just stop it.
+
 Before a big task, a snapshot is a cheap undo button: `multipass stop test`, then `multipass snapshot test`. Later, `multipass restore test.snapshot1` takes the VM back.
-
----
-
-## Troubleshooting
-
-<details>
-<summary><code>opencode: command not found</code> or <code>copilot: command not found</code></summary>
-
-The installer changed your `PATH`, but the shell hasn't picked it up yet. Type `exit`, then `multipass shell test` again.
-</details>
-
-<details>
-<summary>Does my API key work?</summary>
-
-Inside the VM:
-
-```bash
-read -rsp "API key: " KEY; echo
-curl -s https://api.blablador.fz-juelich.de/v1/models -H "Authorization: Bearer $KEY" | head -c 500; echo
-unset KEY
-```
-
-A list of models means the key works. For de.NBI, use `https://llm.bi.denbi.de/v1/models`.
-</details>
-
-<details>
-<summary>Error 429 (Too Many Requests)</summary>
-
-You've hit Blablador's rate limit. Wait a minute, and use an `alias-…` model, which has higher limits ([details](0-sign-up-and-install.md#create-your-api-key)).
-</details>
-
-<details>
-<summary>Windows: "mounts are disabled"</summary>
-
-Run `multipass set local.privileged-mounts=true` ([Step 3b](#windows)).
-</details>
-
-<details>
-<summary>Windows: <code>$'\r': command not found</code> inside the VM</summary>
-
-Your files have Windows line endings. On your laptop, run `git config --global core.autocrlf input`, then clone the project again (or ask a helper how to re-normalise it).
-</details>
-
-<details>
-<summary>Windows: the VM doesn't start</summary>
-
-Make sure the Windows feature **Virtual Machine Platform** is turned on and virtualisation is enabled in the BIOS/UEFI. See [Windows requirements](0-sign-up-and-install.md#multipass).
-</details>
 
 ---
 
