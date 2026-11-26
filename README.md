@@ -38,6 +38,6 @@ configs/         ready-to-copy config files, without any keys
 
 This guide has used [Blablador](https://helmholtz-blablador.fz-juelich.de), the LLM service of Helmholtz AI hosted by Forschungszentrum Jülich, and [de.NBI Cloud Bielefeld](https://llm.bi.denbi.de). We gratefully acknowledge **Blablador, the Helmholtz Association, Helmholtz AI, and de.NBI**.
 
-This guide has also used [Mulipass](https://multipass.run/). We gratefully thank the Canonical team for providing this open-source tool and for their support.
+This guide has also used [Multipass](https://multipass.run/). We gratefully thank the Canonical team for providing this open-source tool and for their support.
 
 The original guide was written by Yuhong Liu and passed through Claude for syntax and grammar checks. The figures were designed together with Claude.
